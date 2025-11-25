@@ -1,290 +1,102 @@
-SmartDocs AI
-Multi-Agent Business Document Understanding & Workflow Automation
+# SmartDocs AI  
+Multi-Agent Business Document Understanding and Workflow Automation
 
-Overview
+## Overview
+SmartDocs AI is a multi-agent document-processing system built using Google’s Gemini models and the Agent Development Kit (ADK). It automates the understanding of business documents such as invoices, purchase orders, contracts, and resumes. The system performs document classification, structured data extraction, summarization, action recommendation, and storage for long-term retrieval.
 
-SmartDocs AI is an enterprise-grade multi-agent system built using Google’s Gemini models and ADK to intelligently process business documents such as:
+This project was developed as part of the Google x Kaggle AI Agents Intensive 2025.
 
-Invoices
+## Problem Statement
+Organizations process large volumes of unstructured business documents. These documents must be read manually, interpreted, summarized, and entered into internal systems. This manual workflow leads to:
 
-Purchase Orders
+- Time-consuming processing  
+- Human errors in data extraction  
+- Inconsistent decisions  
+- Lack of centralized structured records  
+- High cost due to repetitive manual effort  
 
-Contracts
+SmartDocs AI solves this by using LLM-powered agents to convert raw text into structured information and recommend actions automatically.
 
-Resumes
+## Why Agents
+The tasks involved in document understanding are naturally decomposable into specialized roles. A multi-agent architecture aligns with these roles:
 
-Internal business documents
+- A classification agent determines the document type.  
+- An extraction agent pulls structured information.  
+- A summarization agent builds a concise description.  
+- A decision agent recommends the next business action.  
+- A persistence tool stores the output in long-term memory (SQLite).
 
-It transforms messy, unstructured textual documents into:
+Agents provide modularity, interpretability, scalability, and clean role separation, making them ideal for this workflow.
 
-Structured, clean JSON
+## System Architecture
+1. **Type Classification Agent**  
+   Identifies whether a document is an invoice, purchase order, contract, resume, or other.
 
-Human-readable summaries
+2. **Extraction Agent**  
+   Extracts structured fields as a JSON object based on the identified document type.
 
-Intelligent next-step suggestions
+3. **Summary Agent**  
+   Generates a short business summary.
 
-Persisted records stored in a local database
+4. **Decision Agent**  
+   Suggests one recommended action such as “approve,” “escalate_to_finance,” or “request_more_info.”
 
-The project was built as part of the Google x Kaggle – AI Agents Intensive (2025).
+5. **Custom Database Tool**  
+   Stores the processed document in SQLite as long-term memory.
 
-Problem Statement
+User Input → Classification → Extraction → Summary → Decision → Database Storage
 
-Organizations handle thousands of unstructured business documents daily—typically in PDF or text form. Employees must manually open each document, read it, extract relevant information, summarize it, and decide what to do next.
+## Demo
+Below is an example of the pipeline output from a sample invoice:
 
-This leads to huge problems:
+**Input:**  
+Text-based invoice containing vendor details, total amount, currency, and line items.
 
-Time-consuming workflows: Manual entry takes hours every week.
+**Output:**  
+- `doc_type: invoice`  
+- Extracted structured fields (JSON)  
+- Automated 3–5 sentence summary  
+- Suggested action: `approve`  
+- Saved as `doc_id: 1` in the database
 
-Inconsistent decisions: Different employees interpret documents differently.
+## The Build
+Technologies and components used:
 
-Error-prone extraction: Important data (amounts, dates, names) can be missed.
+- Gemini 2.5 (Flash/Pro) models  
+- Google ADK (Python)  
+- Sequential multi-agent architecture  
+- Custom Python tools integrated with ADK  
+- SQLite for long-term memory  
+- Context engineering for consistent JSON responses  
+- Evaluation framework for type-classification accuracy
 
-Lack of structured storage: No centralized, searchable repository.
+### Key ADK Concepts Implemented
+- Multi-agent pipeline  
+- Custom tool usage  
+- Persistent long-term memory  
+- Context compaction strategies  
+- Logging and error handling  
+- Agent evaluation harness  
 
-No automated recommendations: Teams must manually choose actions.
+## Evaluation
+The evaluation suite runs multiple example documents and checks:
 
-This creates operational bottlenecks, compliance risks, and high labor costs.
+- Type classification accuracy  
+- Presence of required extracted fields  
+- Agent behavior consistency  
 
-SmartDocs AI solves this by converting raw documents into structured data and automating business decisions using a pipeline of intelligent agents.
+Example result:Overall type classification accuracy: 1.00
 
- Why Agents?
+## If I Had More Time
+- Add OCR and PDF parsing for real-world scanned documents  
+- Add parallel agents for faster performance  
+- Implement loop-based agents for repairing incorrect JSON  
+- Build a Streamlit/Gradio UI for uploads and visualization  
+- Add observability dashboards (metrics, token usage, latency)  
+- Deploy as a Cloud Run API endpoint  
+- Add vendor profiling and analytics features  
 
-Agents are the perfect solution because document understanding naturally breaks down into specialized cognitive tasks, just like a team of employees:
+## License
+This project is released for educational and research use.
 
-✔ Classification Agent determines what type of document it is.
-✔ Extraction Agent pulls structured fields from the text.
-✔ Summary Agent writes a concise human-understandable summary.
-✔ Decision Agent suggests the next business step.
 
-Agents allow:
-
-🔹 Modular intelligence (one agent per skill)
-
-🔹 Sequential or parallel workflows
-
-🔹 Tool usage (database save tool)
-
-🔹 Context engineering
-
-🔹 Long-term memory via persistence
-
-🔹 Improved explainability
-
-🔹 Composable growth (e.g., add OCR agent, legal review agent later)
-
-This mirrors real business operations—except faster, more accurate, and scalable.
-
- System Architecture
-                   SmartDocs AI Agent Pipeline
-────────────────────────────────────────────────────────────
-
-User Input (Text / OCR Output)
-            │
-            ▼
-┌──────────────────────────┐
-│ 1. Type Classification    │  ← "What kind of document is this?"
-│    (LLM Agent)            │
-└───────────────┬──────────┘
-                │ doc_type
-                ▼
-┌──────────────────────────┐
-│ 2. Extraction Agent      │  ← Extract key fields (JSON)
-└───────────────┬──────────┘
-                │ fields_json
-                ▼
-┌──────────────────────────┐
-│ 3. Summary Agent         │  ← Human-readable summary
-└───────────────┬──────────┘
-                │ summary
-                ▼
-┌──────────────────────────┐
-│ 4. Decision Agent        │  ← approve / escalate / request info
-└───────────────┬──────────┘
-                │ suggested_action
-                ▼
-┌──────────────────────────┐
-│ Custom Tool: save_document_record()  
-│ Stores record in SQLite DB  
-└──────────────────────────┘
-                │ doc_id
-                ▼
-         smartdocs.db (Long-term memory)
-
- Features
-✔ Multi-Agent Architecture
-
-4 agents working sequentially.
-
-✔ Custom Tool Integration
-
-Database write tool stores extracted documents.
-
-✔ Context Engineering
-
-Prompts enforce strict JSON formatting + clean output.
-
-✔ Persistent Memory
-
-Documents stored in SQLite (smartdocs.db).
-
-✔ ADK Concepts
-
-Multi-agent pipeline
-
-Tool usage
-
-Memory + persistence
-
-Context compaction methods
-
-Evaluation harness
-
-✔ Evaluation Framework
-
-Automatic accuracy + extraction testing.
-
-Demo Output (Example)
-Input (Invoice):
-INVOICE
-Vendor: ACME Pvt Ltd
-Customer: CMB Solutions
-Invoice Date: 2025-10-01
-...
-
-Output:
-Doc Type: invoice
-Suggested Action: approve
-Summary: This document is an invoice...
-
-Extracted Fields:
-{
-  "vendor": "ACME Pvt Ltd",
-  "customer": "CMB Solutions",
-  "invoice_date": "2025-10-01",
-  "due_date": "2025-10-15",
-  "currency": "INR",
-  "total_amount": 45000
-}
-
-Stored:
-doc_id: 1  → saved inside smartdocs.db
- Evaluation Results
-
-Using the built-in evaluation harness:
-
-evaluate_smartdocs(test_docs)
-
-
-Example:
-
-Overall type classification accuracy: 1.00
-
-
-The harness also prints extracted fields and suggested actions for comparison.
-
-Project Structure
-SmartDocs/
-│
-├── smartdocs_agent.ipynb    # Main notebook
-├── smartdocs.db             # SQLite persistent memory
-├── README.md                # This file
-├── A_2D_digital_graphic_*.png  # Thumbnails & banners
-└── utils/
-    ├── call_gemini.py
-    ├── safe_json_parse.py
-    ├── process_document.py
-    └── save_document_record.py
-
-Tech Stack
-
-Gemini 2.5 Flash / Pro
-
-Google ADK (Python)
-
-SQLite (local persistent memory)
-
-Python 3.10+
-
-Kaggle Notebook Runtime
-
-🛠️ How It Works (Core Components)
-1. call_gemini(prompt)
-
-Unified method to call Gemini → returns clean text.
-
-2. safe_json_loads
-
-Extracts JSON from LLM responses robustly.
-
-3. process_document(raw_text)
-
-Main orchestrator performing:
-
-classify → extract → summarize → decide → store
-
-4. save_document_record()
-
-Custom tool writing:
-
-doc_type
-
-summary
-
-fields JSON
-
-action
-
-to SQLite.
-
-5. evaluate_smartdocs()
-
-Runs multiple test examples and prints:
-
-predicted vs expected
-
-extracted field keys
-
-accuracy
-
-🔮 If I Had More Time (Future Improvements)
-1️⃣ OCR + PDF Upload Support
-
-Integrate OCR (Google Vision, Tesseract) to process real scanned docs.
-
-2️⃣ Parallel Agents
-
-Run extraction & summary agents simultaneously via asyncio.
-
-3️⃣ Loop Agent for Missing Fields
-
-If extraction is incomplete → retry with clarifying prompts.
-
-4️⃣ Observability Dashboard
-
-Monitor latency, token usage, agent performance.
-
-5️⃣ Cloud Deployment
-
-Expose API using Cloud Run + ADK Agent Engine.
-
-6️⃣ Vendor Intelligence Layer
-
-Track vendors, risk, frequency, and previous decisions.
-
-7️⃣ UI (Streamlit / Gradio)
-
-Interactive upload + viewing panel for SmartDocs.
-
-🎨 Thumbnails & Images
-
-Use these three images for Kaggle Card & Submission:
-
-A_2D_digital_graphic_design_displays_promotional_c.png
-
-A_2D_digital_graphic_design_image_showcases_a_prom.png
-
-A_2D_digital_graphic_design_features_promotional_c.png
-
-📄 License
-
-This project is open for educational and research use.
